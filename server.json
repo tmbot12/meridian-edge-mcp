@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.tmbot12/meridian-edge",
+  "title": "Meridian Edge — Prediction Market Consensus",
+  "description": "Real-time prediction market consensus data for AI agents. Aggregated probabilities from multiple regulated prediction markets, updated every 10 minutes. 5 tools: consensus, opportunities, signals, markets, settlements.",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/meridian-edge/meridian-edge-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "meridian-edge-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MERIDIAN_EDGE_API_KEY",
+          "description": "Free API key from meridianedge.io (100 calls/day, no credit card required)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
