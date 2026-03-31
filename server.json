@@ -5,7 +5,7 @@
   "description": "Real-time prediction market consensus data for AI agents",
   "version": "0.1.0",
   "repository": {
-    "url": "https://github.com/meridian-edge/meridian-edge-mcp",
+    "url": "https://github.com/tmbot12/meridian-edge-mcp",
     "source": "github"
   },
   "packages": [
