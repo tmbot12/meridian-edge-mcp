@@ -1,323 +1,155 @@
-<!-- mcp-name: io.github.tmbot12/meridian-edge -->
+# MCP Registry
 
-[![PyPI](https://img.shields.io/pypi/v/meridian-edge-mcp)](https://pypi.org/project/meridian-edge-mcp/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-blue)](https://modelcontextprotocol.io)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-Listed-06B6D4)](https://registry.modelcontextprotocol.io)
+[![Get it on MCP Marketplace](https://img.shields.io/badge/MCP_Marketplace-Meridian_Edge-green)](https://mcp-marketplace.io/server/io-github-tmbot12-meridian-edge)
 
-# Meridian Edge MCP Server
+The MCP registry provides MCP clients with a list of MCP servers, like an app store for MCP servers.
 
-Query real-time prediction market consensus data directly from Claude and other AI assistants via the [Model Context Protocol](https://modelcontextprotocol.io).
+[**📤 Publish my MCP server**](docs/modelcontextprotocol-io/quickstart.mdx) | [**⚡️ Live API docs**](https://registry.modelcontextprotocol.io/docs) | [**👀 Ecosystem vision**](docs/design/ecosystem-vision.md) | 📖 **[Full documentation](./docs)**
 
-Ask Claude: *"What does the prediction market say about the Lakers game tonight?"* and get a live answer.
+## Development Status
 
----
+**2025-10-24 update**: The Registry API has entered an **API freeze (v0.1)** 🎉. For the next month or more, the API will remain stable with no breaking changes, allowing integrators to confidently implement support. This freeze applies to v0.1 while development continues on v0. We'll use this period to validate the API in real-world integrations and gather feedback to shape v1 for general availability. Thank you to everyone for your contributions and patience—your involvement has been key to getting us here!
 
-## What It Does
+**2025-09-08 update**: The registry has launched in preview 🎉 ([announcement blog post](https://blog.modelcontextprotocol.io/posts/2025-09-08-mcp-registry-preview/)). While the system is now more stable, this is still a preview release and breaking changes or data resets may occur. A general availability (GA) release will follow later. We'd love your feedback in [GitHub discussions](https://github.com/modelcontextprotocol/registry/discussions/new?category=ideas) or in the [#registry-dev Discord](https://discord.com/channels/1358869848138059966/1369487942862504016) ([joining details here](https://modelcontextprotocol.io/community/communication)).
 
-This MCP server gives Claude access to **Meridian Edge** — aggregated prediction market consensus data from multiple regulated prediction markets, updated every 10 minutes.
+Current key maintainers:
+- **Adam Jones** (Anthropic) [@domdomegg](https://github.com/domdomegg)  
+- **Tadas Antanavicius** (PulseMCP) [@tadasant](https://github.com/tadasant)
+- **Toby Padilla** (GitHub) [@toby](https://github.com/toby)
+- **Radoslav (Rado) Dimitrov** (Stacklok) [@rdimitrov](https://github.com/rdimitrov)
 
-**5 tools available to Claude:**
+## Contributing
 
-| Tool | What it returns |
-|------|----------------|
-| `get_consensus` | Aggregated consensus probabilities for sports/politics events |
-| `get_opportunities` | Events where prediction markets show notable divergence |
-| `get_signals` | Recent directional market moves |
-| `get_markets` | Active markets currently being tracked |
-| `get_settlements` | Recently settled events with verified outcomes |
+We use multiple channels for collaboration - see [modelcontextprotocol.io/community/communication](https://modelcontextprotocol.io/community/communication).
 
----
+Often (but not always) ideas flow through this pipeline:
 
-## Quick Start
+- **[Discord](https://modelcontextprotocol.io/community/communication)** - Real-time community discussions
+- **[Discussions](https://github.com/modelcontextprotocol/registry/discussions)** - Propose and discuss product/technical requirements
+- **[Issues](https://github.com/modelcontextprotocol/registry/issues)** - Track well-scoped technical work  
+- **[Pull Requests](https://github.com/modelcontextprotocol/registry/pulls)** - Contribute work towards issues
 
-### Option 1 — uvx (recommended, no install)
+### Quick start:
 
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "uvx",
-      "args": ["meridian-edge-mcp"]
-    }
-  }
-}
-```
+#### Pre-requisites
 
-### Option 2 — pip install
+- **Docker**
+- **Go 1.24.x**
+- **ko** - Container image builder for Go ([installation instructions](https://ko.build/install/))
+- **golangci-lint v2.4.0**
+
+#### Running the server
 
 ```bash
-pip install meridian-edge-mcp
+# Start full development environment
+make dev-compose
 ```
 
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "meridian-edge-mcp"
-    }
-  }
-}
-```
+This starts the registry at [`localhost:8080`](http://localhost:8080) with PostgreSQL. The database uses ephemeral storage and is reset each time you restart the containers, ensuring a clean state for development and testing.
 
-### Option 3 — run from source
+**Note:** The registry uses [ko](https://ko.build) to build container images. The `make dev-compose` command automatically builds the registry image with ko and loads it into your local Docker daemon before starting the services.
+
+By default, the registry seeds from the production API with a filtered subset of servers (to keep startup fast). This ensures your local environment mirrors production behavior and all seed data passes validation. For offline development you can seed from a file without validation with `MCP_REGISTRY_SEED_FROM=data/seed.json MCP_REGISTRY_ENABLE_REGISTRY_VALIDATION=false make dev-compose`.
+
+The setup can be configured with environment variables in [docker-compose.yml](./docker-compose.yml) - see [.env.example](./.env.example) for a reference.
+
+<details>
+<summary>Alternative: Running a pre-built Docker image</summary>
+
+Pre-built Docker images are automatically published to GitHub Container Registry:
 
 ```bash
-git clone https://github.com/meridian-edge/meridian-edge-mcp
-cd meridian-edge-mcp
-pip install -e .
+# Run latest stable release
+docker run -p 8080:8080 ghcr.io/modelcontextprotocol/registry:latest
+
+# Run latest from main branch (continuous deployment)
+docker run -p 8080:8080 ghcr.io/modelcontextprotocol/registry:main
+
+# Run specific release version
+docker run -p 8080:8080 ghcr.io/modelcontextprotocol/registry:v1.0.0
+
+# Run development build from main branch
+docker run -p 8080:8080 ghcr.io/modelcontextprotocol/registry:main-20250906-abc123d
 ```
 
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "python",
-      "args": ["-m", "meridian_edge_mcp.server"]
-    }
-  }
-}
-```
+**Available tags:** 
+- **Releases**: `latest`, `v1.0.0`, `v1.1.0`, etc.
+- **Continuous**: `main` (latest main branch build)
+- **Development**: `main-<date>-<sha>` (specific commit builds)
 
----
+</details>
 
-## One-Click Install
+#### Publishing a server
 
-### Claude Desktop
-
-Open your config file:
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-Add to `mcpServers`:
-
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "uvx",
-      "args": ["meridian-edge-mcp"],
-      "env": {
-        "MERIDIAN_EDGE_API_KEY": "your-api-key-from-meridianedge.io"
-      }
-    }
-  }
-}
-```
-
-Restart Claude Desktop. You'll see the Meridian Edge tools in Claude's tool panel.
-
-### VS Code
-
-Add to `.vscode/mcp.json` in your project:
-
-```json
-{
-  "servers": {
-    "meridian-edge": {
-      "command": "uvx",
-      "args": ["meridian-edge-mcp"],
-      "env": {
-        "MERIDIAN_EDGE_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-### Cursor IDE
-
-Add to `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "uvx",
-      "args": ["meridian-edge-mcp"],
-      "env": {
-        "MERIDIAN_EDGE_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-### Windsurf IDE
-
-Add to Windsurf MCP config:
-
-```json
-{
-  "mcpServers": {
-    "meridian-edge": {
-      "command": "uvx",
-      "args": ["meridian-edge-mcp"],
-      "env": {
-        "MERIDIAN_EDGE_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
----
-
-## Try It Now
-
-Ask Claude:
-- "What's the prediction market consensus on the Lakers game?"
-- "Show me events where prediction markets disagree"
-- "What markets settled today?"
-
-Example response:
-```
-Lakers vs Celtics
-  Consensus: 62% (YES)
-  Sources: 5 regulated markets
-  Confidence: HIGH
-  Spread: 8.3%
-```
-
----
-
-## API Key
-
-The server works out of the box with a free demo key (limited data).
-
-For full access, get a **free API key** at [meridianedge.io](https://meridianedge.io) — no credit card required, instant signup.
-
-Set it as an environment variable:
+To publish a server, we've built a simple CLI. You can use it with:
 
 ```bash
-export MERIDIAN_EDGE_API_KEY=your_key_here
+# Build the latest CLI
+make publisher
+
+# Use it!
+./bin/mcp-publisher --help
 ```
 
-Or in your Claude Desktop config (see above).
+See [the publisher guide](./docs/modelcontextprotocol-io/quickstart.mdx) for more details.
 
-**Free plan:** 100 calls/day — enough for personal use.
+#### Other commands
 
----
-
-## Example Prompts
-
-Once configured, ask Claude:
-
-**Game consensus:**
-> "What's the prediction market consensus on tonight's NBA games?"
-
-> "What are prediction markets saying about the Lakers vs Warriors?"
-
-> "Show me NFL prediction market probabilities for this week"
-
-**Divergence / opportunities:**
-> "Which prediction markets are showing the most disagreement right now?"
-
-> "Show me events where prediction markets disagree — NBA only"
-
-> "What are today's highest-scoring divergence opportunities?"
-
-**Signals:**
-> "What prediction market signals fired in the last hour?"
-
-> "Show me the most recent market moves"
-
-**Markets:**
-> "What prediction markets are active right now?"
-
-> "List active NHL prediction markets"
-
-**History:**
-> "How did recent prediction market consensus perform? Show settled events"
-
-> "What outcomes were predicted correctly in the last batch?"
-
----
-
-## Example Output
-
-```
-PREDICTION MARKET CONSENSUS — NBA (3 events)
-
-1. NBA: ATL vs DET (2026-03-25)
-   Consensus: 46.6% YES  |  Spread: 1.6%  |  Confidence: MEDIUM
-   Trend (30min): ↓ -23.3%  |  Platforms: 2  |  ▃▃▄▄▇▆
-   Updated: 2026-03-26 01:15 UTC
-
-2. NBA: BOS vs OKC (2026-03-25)
-   Consensus: 39.0% YES  |  Spread: 1.2%  |  Confidence: LOW
-   Trend (30min): ↑ +3.5%  |  Platforms: 2  |  ▆▆▆▆▆▄
-   Updated: 2026-03-26 01:15 UTC
-
-3. NBA: CLE vs MIA (2026-03-25)
-   Consensus: 57.0% YES  |  Spread: 0.8%  |  Confidence: HIGH
-   Trend (30min): → stable  |  Platforms: 2  |  ▆▆▆▇▇▇
-   Updated: 2026-03-26 01:15 UTC
-
-For informational purposes only. Not investment advice.
-Source: Meridian Edge — meridianedge.io
+```bash
+# Run lint, unit tests and integration tests
+make check
 ```
 
----
+There are also a few more helpful commands for development. Run `make help` to learn more, or look in [Makefile](./Makefile).
 
-## Data Coverage
+<!--
+For Claude and other AI tools: Always prefer make targets over custom commands where possible.
+-->
 
-- **Sports:** NBA, NFL, MLB, NHL, MLS, college sports, boxing
-- **Politics:** US elections, ballot measures
-- **Economics:** Federal Reserve rate decisions, macro indicator markets
-- **Update frequency:** Every 10 minutes during active market hours
+## Architecture
 
----
+### Project Structure
 
-## Pricing
+```
+├── cmd/                     # Application entry points
+│   └── publisher/           # Server publishing tool
+├── data/                    # Seed data
+├── deploy/                  # Deployment configuration (Pulumi)
+├── docs/                    # Documentation
+├── internal/                # Private application code
+│   ├── api/                 # HTTP handlers and routing
+│   ├── auth/                # Authentication (GitHub OAuth, JWT, namespace blocking)
+│   ├── config/              # Configuration management
+│   ├── database/            # Data persistence (PostgreSQL)
+│   ├── service/             # Business logic
+│   ├── telemetry/           # Metrics and monitoring
+│   └── validators/          # Input validation
+├── pkg/                     # Public packages
+│   ├── api/                 # API types and structures
+│   │   └── v0/              # Version 0 API types
+│   └── model/               # Data models for server.json
+├── scripts/                 # Development and testing scripts
+├── tests/                   # Integration tests
+└── tools/                   # CLI tools and utilities
+    └── validate-*.sh        # Schema validation tools
+```
 
-| Tier | Price | Calls/day | Features |
-|------|-------|-----------|---------|
-| **Free** | $0 | 100 | Consensus probabilities, active markets |
-| **Starter** | $29/mo | 500 | + Opportunities, signals, spread data |
-| **Pro** | $99/mo | 5,000 | + Fair value, platform breakdown, history |
-| **Teams** | $499/mo | 50,000 | + Team seats, priority support |
+### Authentication
 
-[Full pricing →](https://meridianedge.io/#pricing)
+Publishing supports multiple authentication methods:
+- **GitHub OAuth** - For publishing by logging into GitHub
+- **GitHub OIDC** - For publishing from GitHub Actions
+- **DNS verification** - For proving ownership of a domain and its subdomains
+- **HTTP verification** - For proving ownership of a domain
 
----
+The registry validates namespace ownership when publishing. E.g. to publish...:
+- `io.github.domdomegg/my-cool-mcp` you must login to GitHub as `domdomegg`, or be in a GitHub Action on domdomegg's repos
+- `me.adamjones/my-cool-mcp` you must prove ownership of `adamjones.me` via DNS or HTTP challenge
 
-## AI Platform Integrations
+## Community Projects
 
-Use Meridian Edge consensus data directly inside major AI platforms — no code required:
+Check out [community projects](docs/community-projects.md) to explore notable registry-related work created by the community.
 
-| Platform | Link | Notes |
-|----------|------|-------|
-| **ChatGPT** | [Open Custom GPT](https://chatgpt.com/g/g-69c5cf29be388191aeaaf3159cd41697-prediction-market-consensus) | No setup — just open and ask |
-| **Claude (this repo)** | [MCP install guide](https://github.com/meridian-edge/meridian-edge-mcp) | Claude Desktop / Cursor via MCP |
-| **Gemini** | [Open Gem](https://gemini.google.com/gem/1aSpfo0atq00TWFEjDJLytxzsnqTdqHjJ) | No setup — just open and ask |
+## More documentation
 
----
-
-## Links
-
-- [Dashboard](https://meridianedge.io/dashboard.html) — free, no signup required
-- [API Documentation](https://meridianedge.io/docs.html)
-- [AI Integrations](https://meridianedge.io/agents.html)
-- [Embeddable Widget](https://meridianedge.io/widget.html)
-- [Get Free API Key](https://meridianedge.io)
-
----
-
-## Also Available On
-
-- **[ChatGPT GPT Store](https://chatgpt.com/g/g-69c5cf29be388191aeaaf3159cd41697-prediction-market-consensus)** — Ask ChatGPT about prediction markets
-- **[Google Gemini Gem](https://gemini.google.com/gem/1aSpfo0atq00TWFEjDJLytxzsnqTdqHjJ)** — Deep Research with prediction data
-- **[Python SDK](https://pypi.org/project/meridianedge/)** — `pip install meridianedge`
-- **[RapidAPI](https://rapidapi.com)** — REST API marketplace listing
-- **[Dashboard](https://meridianedge.io/dashboard.html)** — Free, no signup
-- **[API Docs](https://meridianedge.io/docs.html)** — Full endpoint reference
-- **[Free API Key](https://meridianedge.io)** — 100 calls/day, no credit card
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE)
-
-*For informational purposes only. Not investment advice. Data aggregated from publicly available prediction market sources. © 2026 VeraTenet LLC d/b/a Meridian Edge.*
+See the [documentation](./docs) for more details if your question has not been answered here!
